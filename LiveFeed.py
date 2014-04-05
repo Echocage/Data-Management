@@ -4,11 +4,11 @@ import time
 import time as usertime
 import os
 from pylab import *
+from matplotlib.dates import DateFormatter
 
 
 def extractTime(fTime):
-    rTime = time.ctime(int(fTime)).split(' ')[3].split(':')
-    return float(rTime[0]) + float(rTime[1]) / 60.0 + float(rTime[2]) / 3600.0
+    return datetime.datetime.fromtimestamp(fTime)  # Turns timestamp into datetime object
 
 
 def updateArrays():
@@ -18,32 +18,31 @@ def updateArrays():
         nums.append(row[1])
     timeLastChecked = usertime.time()
 
-
 def updateGraph():
-    plt.xlim(max(times) - .25, max(times))
+    plt.xlim(max(times) - datetime.timedelta(minutes=15), max(times))
     plt.ylim(0, max(nums) * 1.2)
-    plt.plot(times, nums, 'r-')
+    plt.plot_date(times, nums, 'r-')
     plt.draw()
 
 
-timeLastChecked = usertime.time() - 6000
-con = sqlite3.connect('C:/data/FacebookOnlineData.db')
+path = 'C:/data/FacebookOnlineData.db'
+timeLastChecked = usertime.time() - 3000
+con = sqlite3.connect(path)
 c = con.cursor()
-size = os.path.getmtime('C:/data/FacebookOnlineData.db')
+size = os.path.getmtime(path)
 times, nums = [], []
-
 plt.ion()
 updateArrays()
 updateGraph()
 plt.show()
-
+formatter = DateFormatter('%H:%M')
+plt.gcf().axes[0].xaxis.set_major_formatter(formatter)
 while True:
     try:
-
-        if os.path.getmtime('C:/data/FacebookOnlineData.db') > size:
+        if os.path.getmtime(path) > size:
             updateArrays()
             updateGraph()
-            size = os.path.getmtime('C:/data/FacebookOnlineData.db')
+            size = os.path.getmtime(path)
             plt.pause(
                 15)  # Database "Should" update every 15 seconds, so lets way until it should be updated before trying.
         else:
