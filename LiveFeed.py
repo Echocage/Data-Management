@@ -1,3 +1,4 @@
+from _tkinter import TclError
 import sqlite3
 import time
 import time as usertime
@@ -18,31 +19,35 @@ def updateArrays():
     timeLastChecked = usertime.time()
 
 
+def updateGraph():
+    plt.xlim(max(times) - .25, max(times))
+    plt.ylim(0, max(nums) * 1.2)
+    plt.plot(times, nums, 'r-')
+    plt.draw()
+
+
 timeLastChecked = usertime.time() - 6000
 con = sqlite3.connect('C:/data/FacebookOnlineData.db')
 c = con.cursor()
 size = os.path.getmtime('C:/data/FacebookOnlineData.db')
-times = []
-nums = []
+times, nums = [], []
 
+plt.ion()
 updateArrays()
+updateGraph()
+plt.show()
 
-plt.ylim(0, max(nums) * 1.2)
-plt.interactive(True)
-plt.xlim(max(times) - .25, max(times))
-plt.ion() # set plot to animated
-graph = plt.plot(times, nums, 'r-')
-plt.draw()
 while True:
     if os.path.getmtime('C:/data/FacebookOnlineData.db') > size:
         updateArrays()
-        plt.xlim(max(times) - .25, max(times))
-        plt.ylim(0, max(nums) * 1.2)
-        plt.plot(times, nums, 'r-')
-        plt.draw()
         size = os.path.getmtime('C:/data/FacebookOnlineData.db')
-        plt.pause(15)
-    plt.pause(1)
+        plt.pause(
+            15)  # Database "Should" update every 15 seconds, so lets way until it should be updated before trying.
+    else:
+        try:
+            plt.pause(1)
+        except TclError:  # Can't sleep due to graph being closed
+            None
 
 
 
