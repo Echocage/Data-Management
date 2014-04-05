@@ -38,16 +38,17 @@ updateGraph()
 plt.show()
 
 while True:
-    if os.path.getmtime('C:/data/FacebookOnlineData.db') > size:
-        updateArrays()
-        size = os.path.getmtime('C:/data/FacebookOnlineData.db')
-        plt.pause(
-            15)  # Database "Should" update every 15 seconds, so lets way until it should be updated before trying.
-    else:
-        try:
+    try:
+        if os.path.getmtime('C:/data/FacebookOnlineData.db') > size:
+            updateArrays()
+            updateGraph()
+            size = os.path.getmtime('C:/data/FacebookOnlineData.db')
+            plt.pause(
+                15)  # Database "Should" update every 15 seconds, so lets way until it should be updated before trying.
+        else:
             plt.pause(1)
-        except TclError:  # Can't sleep due to graph being closed
-            None
+    except TclError:  # Can't sleep due to graph being closed
+        None
 
 
 
