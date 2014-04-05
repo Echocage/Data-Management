@@ -39,6 +39,7 @@ plt.show()
 
 while True:
     try:
+
         if os.path.getmtime('C:/data/FacebookOnlineData.db') > size:
             updateArrays()
             updateGraph()
@@ -48,7 +49,7 @@ while True:
         else:
             plt.pause(1)
     except TclError:  # Can't sleep due to graph being closed
-        None
+        break
 
 
 
