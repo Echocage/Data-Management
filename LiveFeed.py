@@ -1,6 +1,5 @@
 from _tkinter import TclError
 import sqlite3
-import time
 import time as usertime
 import os
 from pylab import *
@@ -17,6 +16,7 @@ def updateArrays():
         times.append(extractTime(row[0]))
         nums.append(row[1])
     timeLastChecked = usertime.time()
+
 
 def updateGraph():
     plt.xlim(max(times) - datetime.timedelta(minutes=15), max(times))
