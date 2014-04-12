@@ -12,7 +12,7 @@ def getColor():
 con = sqlite3.connect('C:/data/FacebookFriendsData.db')
 c = con.cursor()
 
-user = ["Kevin Gladnick", "Tanner Mindak", 'Bo Oelkers']
+user = ['Becca Redmond', 'Tanner Mindak']
 times = [[0] * 24 for x in user]
 for row in c.execute(
                 'SELECT * FROM CodeTable WHERE name IN ' + ([x for x in user].__str__()).replace('[', '(').replace(']',
@@ -22,7 +22,7 @@ for row in c.execute(
 
 index = np.arange(24)
 bars = []
-width = .25
+width = .7 / user.__len__()
 for x in times:
     bars.append(plt.bar(index + times.index(x) * width, x, color=getColor(), label=user[times.index(x)], width=width))
 
