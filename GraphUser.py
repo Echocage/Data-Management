@@ -5,7 +5,7 @@ from pylab import *
 con = sqlite3.connect('C:/data/FacebookFriendsData.db')
 c = con.cursor()
 times = [0] * 24
-user = "Timothy Jayjohn"
+user = input('Enter user: ')
 
 for row in c.execute('SELECT * FROM CodeTable WHERE user = \'' + user + '\''):
     nTime = datetime.datetime.fromtimestamp(row[0]).hour
