@@ -15,7 +15,7 @@ c = con.cursor()
 user = ['Becca Redmond', 'Tanner Mindak']
 times = [[0] * 24 for x in user]
 for row in c.execute(
-                'SELECT * FROM CodeTable WHERE name IN ' + ([x for x in user].__str__()).replace('[', '(').replace(']',
+                'SELECT * FROM CodeTable WHERE user IN ' + ([x for x in user].__str__()).replace('[', '(').replace(']',
                                                                                                                    ')')):
     nTime = datetime.datetime.fromtimestamp(row[0]).hour
     times[user.index(row[1])][int(nTime)] += 1

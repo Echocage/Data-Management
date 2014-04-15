@@ -7,7 +7,7 @@ c = con.cursor()
 times = [0] * 24
 user = "Timothy Jayjohn"
 
-for row in c.execute('SELECT * FROM CodeTable WHERE name = \'' + user + '\''):
+for row in c.execute('SELECT * FROM CodeTable WHERE user = \'' + user + '\''):
     nTime = datetime.datetime.fromtimestamp(row[0]).hour
     times[int(nTime)] += 1
 
