@@ -12,23 +12,21 @@ newDb = 'C:/data/FacebookFriendsData2.db'
 
 
 
-
-
 def addPoint(name, currentTime):
     try:
         if timestampList[-1] == currentTime:
-            timestampId = timestampList.__len__()
+            timestampId = len(timestampList)
         else:
-            timestampId = timestampList.__len__() + 1
+            timestampId = len(timestampList) + 1
             timestampList.append(currentTime)
     except:
-        timestampId = timestampList.__len__() + 1
+        timestampId = len(timestampList) + 1
         timestampList.append(currentTime)
 
     try:
         userId = userList.index(name)
     except:
-        userId = userList.__len__() + 1
+        userId = len(userList) + 1
         userList.append(name)
     dataList.append([userId, timestampId])
 
@@ -49,8 +47,8 @@ i = 0
 for row in c2.execute('SELECT * FROM CodeTable'):
     addPoint(row[1], int(row[0]))
     i += 1
-    if i % 1000000 == 0:
-        print i
+    if i % 100000 == 0:
+        print i, len(userList), len(dataList)
 print '============ Converted ============'
 ctimestampList = []
 cuserList = []
