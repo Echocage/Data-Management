@@ -1,4 +1,3 @@
-Data Management|Socal media data collection and analysis
+Data Management
 ========
-
 Collect and display data from various social media networks
