@@ -1,4 +1,4 @@
-Facebook
+Data Management|Socal media data collection and analysis
 ========
 
-Collecting and viewing facebook friend's online habit patterns.
+Collect and display data from various social media networks
