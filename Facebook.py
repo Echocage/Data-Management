@@ -4,10 +4,10 @@ import urllib
 import time
 import threading
 from Token import TokenKey
-
-
 def LogUsers():
     con = sqlite3.connect('C:/data/FacebookFriendsData.db')
+    onlineConn = sqlite3.connect('C:/data/FacebookOnlineData.db')
+    onlineCur = onlineConn.cursor()
     c = con.cursor()
     list = [['UserIds', ['user TEXT', 'id NUMERIC']], ['TimestampIds', ['timestamp REAL', 'id INTEGER']],
             ['DataTable', ['userID INTEGER', 'timestampID INTEGER']]]
@@ -22,6 +22,9 @@ def LogUsers():
     url = "https://graph.facebook.com/fql?" + params
     data = urllib.urlopen(url).read()
     currentTime = time.time()
+
+    onlineCur.execute('INSERT INTO CodeTable VALUES (?,?)',
+                      [currentTime, len([x for x in json.loads(data)['data'] if x['online_presence'] == 'active'])])
     timestampId = [x for x in c.execute('SELECT * FROM timestampids WHERE timestamp = ' + str(currentTime) + '')]
     if len(timestampId) == 0:
         try:
@@ -45,6 +48,7 @@ def LogUsers():
                 userId = userId[0][1]
             c.execute('INSERT INTO DataTable VALUES (?,?)', [userId, timestampId])
     con.commit()
+    onlineConn.commit()
 
 
 def do_every(interval, worker_func, iterations=0):
