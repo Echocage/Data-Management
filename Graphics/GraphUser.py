@@ -3,11 +3,11 @@ from pylab import *
 con = sqlite3.connect('C:/data/FacebookFriendsData.db')
 c = con.cursor()
 times = [0] * 24
+user = raw_input("Enter user's name: "),
 #Load timestamps into memory
 c.execute("SELECT timestamp FROM TimestampIds")
 timestamps = c.fetchall()
 #Get Users's ID
-user = raw_input("Enter user's name: "),
 c.execute('SELECT id FROM Userids WHERE user = ?', user)
 userId = (c.fetchone()[0] - 1,)
 #Query database with userId getting timestamp indexes for user's
