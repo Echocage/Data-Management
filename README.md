@@ -1,4 +1,3 @@
-Facebook
+Data Management
 ========
-
-Collecting and viewing facebook friend's online habit patterns.
+Collect and display data from various social media networks
