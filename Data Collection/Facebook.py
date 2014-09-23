@@ -1,66 +1,36 @@
-import json
 import sqlite3
 import urllib
 import time
-import threading
+
+import requests
+
 from Token import TokenKey
 
 
-def LogUsers():
-    con = sqlite3.connect('C:/data/FacebookFriendsData.db')
-    onlineConn = sqlite3.connect('C:/data/FacebookOnlineData.db')
-    onlineCur = onlineConn.cursor()
-    c = con.cursor()
-    list = [['UserIds', ['user TEXT', 'id NUMERIC']], ['TimestampIds', ['timestamp REAL', 'id INTEGER']],
-            ['DataTable', ['userID INTEGER', 'timestampID INTEGER']]]
-    for i in list:
-        try:
-            c.execute('SELECT * FROM "' + i[0] + '"')
-        except:
-            c.execute('CREATE TABLE "' + i[0] + '" (' + ','.join(i[1]) + ')')
-
-    query = "SELECT uid, name,online_presence FROM user WHERE uid IN (SELECT uid2 FROM friend WHERE uid1 = me()) order by name"
-    params = urllib.urlencode({'q': query, 'access_token': TokenKey})
-    url = "https://graph.facebook.com/fql?" + params
-    data = urllib.urlopen(url).read()
-    currentTime = time.time()
-
-    onlineCur.execute('INSERT INTO CodeTable VALUES (?,?)',
-                      [currentTime, len([x for x in json.loads(data)['data'] if x['online_presence'] == 'active'])])
-    timestampId = [x for x in c.execute('SELECT * FROM timestampids WHERE timestamp = ' + str(currentTime) + '')]
-    if len(timestampId) == 0:
-        try:
-            timestampId = [x for x in c.execute("SELECT * from timestampids ORDER BY id DESC LIMIT 1")][0][1] + 1
-        except:
-            print 'New Timestamp'
-            timestampId = 1
-    else:
-        timestampId = timestampId[0][1]
-    c.execute('INSERT INTO Timestampids VALUES (?,?)', [int(currentTime), timestampId])
-    for i in json.loads(data)['data']:
-        if i['online_presence'] == 'active':
-            userId = [x for x in c.execute('SELECT * FROM UserIds WHERE user = "' + i['name'] + '"')]
-            if len(userId) == 0:
-                try:
-                    userId = [x for x in c.execute("SELECT * from userIds ORDER BY id DESC LIMIT 1")][0][1] + 1
-                except:
-                    userId = 1
-                c.execute('INSERT INTO UserIds VALUES (?,?)', [i['name'], userId])
-            else:
-                userId = userId[0][1]
-            c.execute('INSERT INTO DataTable VALUES (?,?)', [userId, timestampId])
-    con.commit()
-    onlineConn.commit()
+token_query = "SELECT uid, name,online_presence FROM user WHERE uid IN (SELECT uid2 FROM friend WHERE uid1 = me()) order by name"
+params = urllib.urlencode({'q': token_query, 'access_token': TokenKey})
+base_url = "https://graph.facebook.com/"
+url = "{}/fql?{}".format(base_url, params)
+db = sqlite3.connect('C:/data/FacebookOnlineData.db')
+custom_rep = {'offline': 0, 'idle': 1, 'active': 2}
 
 
-def do_every(interval, worker_func, iterations=0):
-    if iterations != 1:
-        threading.Timer(
-            interval,
-            do_every, [interval, worker_func, 0 if iterations == 0 else iterations - 1]
-        ).start()
+def log_individuals():
+    ind_db = sqlite3.connect('C:/data/Facebook.db')
+    now = time.time()
+    cur = ind_db.cursor()
+    data = requests.get(url).json()
+    users = data['data']
+    user_data = [(user['name'], custom_rep[user['online_presence']]) for user in users]
+    cur.execute('INSERT OR IGNORE INTO timestamps (timestamp) VALUES (?)', (now,))
+    cur.executemany('INSERT OR IGNORE INTO users (username) VALUES  (?)', [(name,) for (name, stat) in user_data])
+    cur.executemany('INSERT OR IGNORE INTO datapoints '
+                    'SELECT timestamps.rowid, us.rowid, ? FROM users '
+                    'INNER JOIN timestamps ON timestamps.timestamp = ? '
+                    'INNER JOIN users us ON us.username = ?', ((status, now, name) for name, status in user_data))
+    ind_db.commit()
 
-    worker_func()
 
-
-do_every(15, LogUsers)
+while True:
+    log_individuals()
+    time.sleep(15)
