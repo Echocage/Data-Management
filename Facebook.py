@@ -4,8 +4,8 @@ import time
 
 import requests
 
-TokenKey = ""
 
+TokenKey = ""
 
 token_query = "SELECT uid, name,online_presence FROM user WHERE uid IN (SELECT uid2 FROM friend WHERE uid1 = me()) order by name"
 params = urllib.urlencode({'q': token_query, 'access_token': TokenKey})
