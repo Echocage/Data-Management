@@ -3,7 +3,7 @@ from pylab import *
 con = sqlite3.connect('C:/data/FacebookFriendsData.db')
 c = con.cursor()
 times = [0] * 24
-user = raw_input("Enter user's name: "),
+user = input("Enter user's name: "),
 #Load timestamps into memory
 c.execute("SELECT timestamp FROM TimestampIds")
 timestamps = c.fetchall()
@@ -20,7 +20,7 @@ for row in list:
     nTime = datetime.datetime.fromtimestamp(row).hour
     times[int(nTime)] += 1
 
-plt.bar(xrange(times.__len__()), times)
+plt.bar(range(times.__len__()), times)
 plt.xlabel("Hours since midnight")
 plt.ylabel("Number of times online recorded")
 plt.xlim((0, 24))

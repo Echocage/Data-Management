@@ -1,14 +1,12 @@
 import sqlite3
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import time
 
 import requests
 
 
-TokenKey = ""
-
 token_query = "SELECT uid, name,online_presence FROM user WHERE uid IN (SELECT uid2 FROM friend WHERE uid1 = me()) order by name"
-params = urllib.urlencode({'q': token_query, 'access_token': TokenKey})
+params = urllib.parse.urlencode({'q': token_query, 'access_token': TokenKey})
 base_url = "https://graph.facebook.com/"
 url = "{}/fql?{}".format(base_url, params)
 db = sqlite3.connect('C:/data/FacebookOnlineData.db')
