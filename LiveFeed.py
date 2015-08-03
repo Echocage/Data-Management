@@ -1,50 +1,58 @@
 from _tkinter import TclError
-import sqlite3
-import time as usertime
+from collections import OrderedDict
+import datetime
 import os
-from pylab import *
+import time
+from pylab import plt
 from matplotlib.dates import DateFormatter
 
-
-def extractTime(fTime):
-    return datetime.datetime.fromtimestamp(fTime)  # Turns timestamp into datetime object
+from database import session, Datapoint
 
 
-def updateArrays():
-    global timeLastChecked
-    for row in c.execute('SELECT * FROM CodeTable WHERE timestamp > ' + timeLastChecked.__str__()):
-        times.append(extractTime(row[0]))
-        nums.append(row[1])
-    timeLastChecked = usertime.time()
+def format_timestamp(timestamp):
+    real_timestamp = datetime.datetime.fromtimestamp(float(timestamp))
+    now = datetime.datetime.now()
+    return real_timestamp.replace(year=now.year, day=now.day, month=now.month)
 
 
-def updateGraph():
+def refresh():
+    global time_checked
+
+    grouped_data = OrderedDict()
+    for datapoint in session.query(Datapoint):
+        timestamp = datapoint.timestamp.timestamp
+        if datapoint.status == 2:
+            grouped_data[timestamp] = grouped_data.get(timestamp, 0) + 1
+
+    time_checked = time.time()
+
+
+    fifteen_ago = time.time() -  datetime.timedelta(minutes=20).total_seconds()
+    relevant_data = [(t, n) for t, n in grouped_data.items() if float(t) > fifteen_ago]
+
+    update_graph([format_timestamp(t) for t, n in relevant_data], [n for t, n in relevant_data])
+
+
+def update_graph(times, nums):
     plt.xlim(max(times) - datetime.timedelta(minutes=15), max(times))
     plt.ylim(0, max(nums) * 1.2)
-    plt.plot_date(times, nums, 'r-')
+    plt.plot_date(times, nums, 'ro')
     plt.draw()
 
 
-path = 'C:/data/FacebookOnlineData.db'
-timeLastChecked = usertime.time() - 3000
-con = sqlite3.connect(path)
-c = con.cursor()
+path = 'datastore.db'
+time_checked = time.time() - 3000
 size = os.path.getmtime(path)
-times, nums = [], []
 plt.ion()
-updateArrays()
-updateGraph()
-plt.show()
+refresh()
 formatter = DateFormatter('%H:%M')
 plt.gcf().axes[0].xaxis.set_major_formatter(formatter)
 while True:
     try:
         if os.path.getmtime(path) > size:
-            updateArrays()
-            updateGraph()
+            refresh()
             size = os.path.getmtime(path)
-            plt.pause(
-                15)  # Database "Should" update every 15 seconds, so lets way until it should be updated before trying.
+            plt.pause(10)
         else:
             plt.pause(1)
     except TclError:  # Can't sleep due to graph being closed

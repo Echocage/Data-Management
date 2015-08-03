@@ -1,17 +1,31 @@
-import sqlite3
-from pylab import *
+from collections import defaultdict
+from datetime import datetime
+from matplotlib.dates import DateFormatter
 
-con = sqlite3.connect('C:/data/FacebookOnlineData.db')
-c = con.cursor()
-DataList = []
-for row in c.execute('SELECT * FROM CodeTable'):
-    now = datetime.date.today()
-    t = datetime.datetime.fromtimestamp(row[0]).replace(year=now.year, day=now.day, month=now.month)
-    # There's something preventing pylab from plotting datetimeobject.time()
-    # and you're forced to give the object a date along with the time if you want it plotted correctly
-    DataList.append([t, row[1]])
+from pylab import plt
 
-plt.plot([x[0] for x in DataList], [x[1] for x in DataList], 'go')
+from database import session, Datapoint
+
+
+session.query(Datapoint).all()
+
+
+def format_timestamp(timestamp):
+    real_timestamp = datetime.fromtimestamp(float(timestamp.timestamp))
+    now = datetime.now()
+    return real_timestamp.replace(year=now.year, day=now.day, month=now.month)
+
+
+datapoints = [(datapoint.user.name, datapoint.timestamp) for datapoint in session.query(Datapoint)]
+
+grouped_data = defaultdict(int)
+for datapoint in session.query(Datapoint):
+    if datapoint.status == 2:
+        grouped_data[datapoint.timestamp] += 1
+
+print('Here')
+x = list(map(format_timestamp, grouped_data.keys()))
+plt.plot(x, list(grouped_data.values()), 'go')
 formatter = DateFormatter('%H:%M')
 plt.gcf().axes[0].xaxis.set_major_formatter(formatter)
 plt.show()
